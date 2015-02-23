@@ -10,9 +10,9 @@
  **/
 
 jQuery.fn.extend({
-	everyTime: function(interval, label, fn, times) {
+	everyTime: function(interval, label, fn, times, donefn) {
 		return this.each(function() {
-			jQuery.timer.add(this, interval, label, fn, times);
+			jQuery.timer.add(this, interval, label, fn, times, donefn);
 		});
 	},
 	oneTime: function(interval, label, fn) {
@@ -55,10 +55,11 @@ jQuery.extend({
 				return value;
 			}
 		},
-		add: function(element, interval, label, fn, times) {
+		add: function(element, interval, label, fn, times, donefn) {
 			var counter = 0;
 			
 			if (jQuery.isFunction(label)) {
+				donefn = times;
 				if (!times) 
 					times = fn;
 				fn = label;
@@ -83,8 +84,12 @@ jQuery.extend({
 			fn.timerID = fn.timerID || this.guid++;
 			
 			var handler = function() {
-				if ((++counter > times && times !== 0) || fn.call(element, counter) === false)
+				if ((++counter > times && times !== 0) || fn.call(element, counter) === false){
 					jQuery.timer.remove(element, label, fn);
+					if(jQuery.isFunction(donefn)){
+						donefn.call(element);
+					}
+				}
 			};
 			
 			handler.timerID = fn.timerID;
